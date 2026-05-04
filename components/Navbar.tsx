@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Menu, X, Tv } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
+import { createClient } from '@/utils/supabase/client';
 
 const navLinks = [
     { name: 'Home', href: '/' },
@@ -16,14 +17,31 @@ const navLinks = [
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [brandName, setBrandName] = useState('Uniziktalkertive TV');
+    const supabase = createClient();
 
     useEffect(() => {
         const handleScroll = () => {
             setScrolled(window.scrollY > 20);
         };
         window.addEventListener('scroll', handleScroll);
+        
+        async function fetchSettings() {
+            const { data } = await supabase
+                .from('gh_site_settings')
+                .select('brand_name')
+                .single();
+            if (data?.brand_name) setBrandName(data.brand_name);
+        }
+        fetchSettings();
+
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
+
+    // Split brand name into two parts for styling (e.g., "Unizik" and "Talkative TV")
+    const brandParts = brandName.split(' ');
+    const firstPart = brandParts[0] || 'Unizik';
+    const secondPart = brandParts.slice(1).join(' ') || 'Talkative';
 
     return (
         <nav
@@ -38,10 +56,17 @@ export default function Navbar() {
                         <Tv className="w-5 h-5 text-white" />
                     </div>
                     <span className={cn(
-                        "text-2xl font-bold tracking-tight transition-colors duration-300",
+                        "text-xl sm:text-2xl font-bold tracking-tight transition-colors duration-300",
                         scrolled ? "text-slate-900" : "text-white"
                     )}>
-                        Unizik<span className="text-primary ml-0.5">Talkative</span>
+                        {brandName.includes(' ') ? (
+                            <>
+                                {firstPart}
+                                <span className="text-primary ml-0.5">{secondPart}</span>
+                            </>
+                        ) : (
+                            brandName
+                        )}
                     </span>
                 </Link>
 
@@ -115,4 +140,3 @@ export default function Navbar() {
         </nav>
     );
 }
-

@@ -1,5 +1,5 @@
 -- Database Schema for Blogging and Ads Management
--- Prefix: gh_ (Unizik Talkative)
+-- Prefix: gh_ (Unizik Talkative TV)
 
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS public.gh_posts (
     category TEXT,
     author TEXT,
     image_url TEXT,
-    status TEXT DEFAULT 'draft' CHECK (status IN ('draft', 'published')),
+    status TEXT DEFAULT 'published',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.gh_ads (
     client_name TEXT,
     image_url TEXT,
     link_url TEXT,
-    status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+    status TEXT DEFAULT 'active',
     start_date DATE,
     end_date DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -39,33 +39,19 @@ CREATE TABLE IF NOT EXISTS public.gh_ad_requests (
     plan TEXT,
     budget TEXT,
     contact_email TEXT,
-    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    status TEXT DEFAULT 'pending',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- ROW LEVEL SECURITY (RLS) policies
+-- DISABLE ROW LEVEL SECURITY (RLS)
+-- To truly open the DB for a "Full Stack OS" experience without complex auth setup
+ALTER TABLE public.gh_posts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gh_ads DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gh_ad_requests DISABLE ROW LEVEL SECURITY;
 
--- Enable RLS
-ALTER TABLE public.gh_posts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.gh_ads ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.gh_ad_requests ENABLE ROW LEVEL SECURITY;
-
--- Posts: Everyone can see published posts
-CREATE POLICY "Allow public read for published posts" ON public.gh_posts
-    FOR SELECT USING (status = 'published');
-
--- Posts: Only authenticated admins can manage all posts
-CREATE POLICY "Allow admin manage all posts" ON public.gh_posts
-    FOR ALL USING (auth.role() = 'authenticated');
-
--- Ads: Everyone can see active ads
-CREATE POLICY "Allow public read for active ads" ON public.gh_ads
-    FOR SELECT USING (status = 'active');
-
--- Ads: Only authenticated admins can manage all ads
-CREATE POLICY "Allow admin manage all ads" ON public.gh_ads
-    FOR ALL USING (auth.role() = 'authenticated');
-
--- Ad Requests: Only admin can see/manage
-CREATE POLICY "Allow admin manage ad requests" ON public.gh_ad_requests
-    FOR ALL USING (auth.role() = 'authenticated');
+-- Drop existing policies to avoid confusion
+DROP POLICY IF EXISTS "Allow public read for published posts" ON public.gh_posts;
+DROP POLICY IF EXISTS "Allow admin manage all posts" ON public.gh_posts;
+DROP POLICY IF EXISTS "Allow public read for active ads" ON public.gh_ads;
+DROP POLICY IF EXISTS "Allow admin manage all ads" ON public.gh_ads;
+DROP POLICY IF EXISTS "Allow admin manage ad requests" ON public.gh_ad_requests;

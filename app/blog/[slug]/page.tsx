@@ -52,7 +52,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <Calendar className="w-4 h-4" />
-                                    {new Date(post.created_at).toLocaleDateString()}
+                                    {new Date(post.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
                                 </div>
                             </div>
                         </div>
@@ -76,7 +76,7 @@ export default async function BlogPostPage({ params }: { params: { slug: string 
                             {/* Body */}
                             <div className="lg:w-3/4">
                                 <div className="prose prose-slate prose-lg max-w-none prose-headings:font-black prose-headings:text-slate-900 prose-p:text-slate-600 prose-p:font-medium prose-p:leading-relaxed prose-strong:text-slate-900">
-                                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                                    <div className="whitespace-pre-wrap">{post.content}</div>
                                 </div>
                             </div>
 

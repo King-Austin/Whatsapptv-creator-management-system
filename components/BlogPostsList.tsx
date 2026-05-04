@@ -19,7 +19,14 @@ interface Post {
 }
 
 export default function BlogPostsList({ posts }: { posts: Post[] }) {
-    if (posts.length === 0) {
+    // Ensure posts are sorted by recently added if not already
+    const sortedPosts = [...posts].sort((a, b) => {
+        const dateA = new Date(a.created_at || a.date || 0).getTime();
+        const dateB = new Date(b.created_at || b.date || 0).getTime();
+        return dateB - dateA;
+    });
+
+    if (sortedPosts.length === 0) {
         return (
             <div className="text-center py-20 bg-slate-50 rounded-[3rem] border-2 border-dashed border-slate-200">
                 <p className="text-slate-500 font-bold text-xl">No posts found yet. Check back soon!</p>
@@ -29,7 +36,7 @@ export default function BlogPostsList({ posts }: { posts: Post[] }) {
 
     return (
         <div className="space-y-12">
-            {posts.map((post, idx) => (
+            {sortedPosts.map((post, idx) => (
                 <motion.article
                     key={post.id}
                     initial={{ opacity: 0, y: 20 }}
